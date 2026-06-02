@@ -235,7 +235,9 @@ function build(){
   L.push(current);L.push(fmtDate(v('date')));
   document.querySelectorAll('#fuelRows input').forEach(inp=>L.push(inp.dataset.grade+': '+(inp.value.trim()||'\u2014')));
   L.push('Total Volume: '+$('totalVol').textContent);
+  L.push('');
   L.push('Market Sales: '+(m.hasGross?comma(m.net):'\u2014'));
+  L.push('');
   if(cfg.kadi) L.push('KADI Account: '+(v('kadi')?'$'+v('kadi'):'$$$'));
   if(cfg.carwash){L.push('Car Wash: '+(v('carwashCount')||'No one provided.'));L.push('Car Wash Sales: '+(v('carwashSales')?'$'+v('carwashSales'):'$$$'));}
   L.push('Cigarettes: '+(v('cigCount')||'\u2014'));
@@ -251,7 +253,9 @@ function build(){
   L.push('Safe Drops: '+(v('safeDrops')?'$'+v('safeDrops'):'$$$'));
   L.push('Titan Report: '+(v('titanReport')?'$'+v('titanReport'):'$$$'));
   var so=v('shortOver'),soStr='\u2014';if(so){var n=num(so);soStr=!isNaN(n)?(n<0?'-$'+Math.abs(n).toFixed(2):'$'+n.toFixed(2)):so;}
+  L.push('');
   L.push('Short/Over: '+soStr);
+  L.push('');
   L.push('Comments:');
   const cm=v('comments').split('\n').map(x=>x.trim()).filter(Boolean);
   if(cm.length) cm.forEach(x=>L.push('- '+x)); else L.push('- ');
