@@ -28,7 +28,7 @@
   .chip{position:relative;flex:0 0 auto;border:1.5px solid var(--line);background:#fff;color:var(--ink);font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;padding:11px 16px;border-radius:12px;cursor:pointer;transition:all .14s;letter-spacing:.03em;min-height:46px}
   .chip:active{transform:scale(.96)}
   .chip.active{background:var(--brand);border-color:var(--brand);color:#fff;box-shadow:0 8px 18px -8px rgba(31,122,236,.7)}
-  .chip.done::after{content:"✓";position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--green);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg)}
+  .chip.done::after{content:"\2713";position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--green);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg)}
   .chip.active.done::after{border-color:var(--brand)}
   .grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:14px}
   @media(min-width:901px){.grid{grid-template-columns:1.05fr .95fr;align-items:start}}
@@ -82,74 +82,72 @@
   <header>
     <div class="brand">
       <h1>Daily <span>Station Report</span></h1>
-      <p>Market Sales is calculated for you: enter the register total and the pass-through items, the app backs them out per station.</p>
+      <p>Enter top to bottom in tally order. Market Sales is computed automatically from the register total minus the pass-throughs.</p>
     </div>
   </header>
-
   <div class="rail"><div class="rail-inner" id="chips"></div></div>
-
   <div class="grid">
     <div class="card">
       <div class="card-head">
         <h2 id="stationName">Daily Inputs</h2>
-        <button class="peek" id="peekBtn">View message ↓</button>
+        <button class="peek" id="peekBtn">View message &darr;</button>
       </div>
       <div class="card-body">
-
-        <div class="sec">Date</div>
+        <div class="sec">Date &amp; Short/Over</div>
         <div class="row">
           <label class="f"><span class="lab">Date <small>(auto: today)</small></span><input type="date" id="date"></label>
-          <span></span>
+          <label class="f"><span class="lab">Short / Over ($)</span><input type="text" inputmode="decimal" id="shortOver" placeholder="-2.50"></label>
         </div>
-
         <div class="sec">Fuel Volume (gallons)</div>
         <div id="fuelRows"></div>
         <div class="auto"><span class="k">Total Volume (auto)</span><span class="v" id="totalVol">0.00</span></div>
-
-        <div class="sec">Inside Sales</div>
-        <div class="row">
-          <label class="f"><span class="lab">Total Inside Sales ($) <small>register total</small></span><input type="text" inputmode="decimal" id="totalInside" placeholder="3,500.00"></label>
-          <label class="f"><span class="lab">Lotto Sales ($) <small>− deducted</small></span><input type="text" inputmode="decimal" id="lotto" placeholder="0.00"></label>
-        </div>
-        <div class="row">
-          <label class="f"><span class="lab">CRV ($) <small>− deducted</small></span><input type="text" inputmode="decimal" id="crv" placeholder="0.00"></label>
-          <label class="f" id="wrap_kadi"><span class="lab">KADI Account ($)</span><input type="text" inputmode="decimal" id="kadi" placeholder="company gas"></label>
-        </div>
-        <div class="row">
-          <label class="f" id="wrap_amerigasSales"><span class="lab">Amerigas Sales ($) <small>− deducted</small></span><input type="text" inputmode="decimal" id="amerigasSales" placeholder="0.00"></label>
-          <label class="f" id="wrap_smogSales"><span class="lab">Smog Sales ($) <small>− deducted</small></span><input type="text" inputmode="decimal" id="smogSales" placeholder="0.00"></label>
-        </div>
-        <div class="row">
-          <label class="f" id="wrap_carwashSales"><span class="lab">Carwash Sales ($) <small>− deducted</small></span><input type="text" inputmode="decimal" id="carwashSales" placeholder="0.00"></label>
+        <div class="sec">Daily Tally</div>
+        <div class="row" id="row_amerigas">
+          <label class="f"><span class="lab">Amerigas Sales ($) <small>&minus; deducted</small></span><input type="text" inputmode="decimal" id="amerigasSales" placeholder="0.00"></label>
           <span></span>
         </div>
-
-        <div class="auto"><span class="k">Market Sales (net, auto)</span><span class="v" id="marketNet">—</span></div>
-        <div class="breakdown" id="breakdown"></div>
-
-        <div class="sec">Scratchers &amp; Cigarettes</div>
-        <div class="row">
-          <label class="f"><span class="lab">Scratchers (count)</span><input type="text" inputmode="numeric" id="scratchCount" placeholder="11"></label>
-          <label class="f"><span class="lab">Scratcher Sales ($) <small>− deducted</small></span><input type="text" inputmode="decimal" id="scratchAmt" placeholder="605.00"></label>
+        <div class="row" id="row_carwash">
+          <label class="f"><span class="lab">Car Wash (count)</span><input type="text" inputmode="numeric" id="carwashCount" placeholder="blank = none"></label>
+          <label class="f"><span class="lab">Car Wash Sales ($) <small>&minus; deducted</small></span><input type="text" inputmode="decimal" id="carwashSales" placeholder="0.00"></label>
         </div>
         <div class="row">
           <label class="f"><span class="lab">Cigarettes (count)</span><input type="text" inputmode="numeric" id="cigCount" placeholder="39"></label>
-          <label class="f"><span class="lab">Cigarettes Amount ($)</span><input type="text" inputmode="decimal" id="cigAmt" placeholder="531.11"></label>
-        </div>
-
-        <div class="sec" id="sec_extras">Counts</div>
-        <div class="row">
-          <label class="f" id="wrap_carwashCount"><span class="lab">Car Wash (count)</span><input type="text" inputmode="numeric" id="carwashCount" placeholder="blank = none"></label>
-          <label class="f" id="wrap_smogCount"><span class="lab">Smog (count)</span><input type="text" inputmode="numeric" id="smogCount" placeholder="7"></label>
+          <label class="f"><span class="lab">Cigarettes Sales ($)</span><input type="text" inputmode="decimal" id="cigAmt" placeholder="531.11"></label>
         </div>
         <div class="row">
-          <label class="f"><span class="lab">Short / Over ($)</span><input type="text" inputmode="decimal" id="shortOver" placeholder="-2.50"></label>
+          <label class="f"><span class="lab">CRV ($) <small>&minus; deducted</small></span><input type="text" inputmode="decimal" id="crv" placeholder="0.00"></label>
           <span></span>
         </div>
-
+        <div class="row">
+          <label class="f"><span class="lab">Lotto (count)</span><input type="text" inputmode="numeric" id="lottoCount" placeholder="0"></label>
+          <label class="f"><span class="lab">Lotto Sales ($) <small>&minus; deducted</small></span><input type="text" inputmode="decimal" id="lotto" placeholder="0.00"></label>
+        </div>
+        <div class="row">
+          <label class="f"><span class="lab">Scratchers (count)</span><input type="text" inputmode="numeric" id="scratchCount" placeholder="11"></label>
+          <label class="f"><span class="lab">Scratcher Sales ($) <small>&minus; deducted</small></span><input type="text" inputmode="decimal" id="scratchAmt" placeholder="605.00"></label>
+        </div>
+        <div class="row" id="row_smog">
+          <label class="f"><span class="lab">Smog (count)</span><input type="text" inputmode="numeric" id="smogCount" placeholder="7"></label>
+          <label class="f"><span class="lab">Smog Sales ($) <small>&minus; deducted</small></span><input type="text" inputmode="decimal" id="smogSales" placeholder="0.00"></label>
+        </div>
+        <div class="row">
+          <label class="f"><span class="lab">Safe Drops ($)</span><input type="text" inputmode="decimal" id="safeDrops" placeholder="0.00"></label>
+          <label class="f"><span class="lab">Titan Report ($)</span><input type="text" inputmode="decimal" id="titanReport" placeholder="0.00"></label>
+        </div>
+        <div class="row" id="row_kadi">
+          <label class="f"><span class="lab">KADI Account ($)</span><input type="text" inputmode="decimal" id="kadi" placeholder="company gas"></label>
+          <span></span>
+        </div>
+        <div class="sec">Department Sales (enter last)</div>
+        <div class="row">
+          <label class="f"><span class="lab">Department Sales ($) <small>gross / total</small></span><input type="text" inputmode="decimal" id="deptSales" placeholder="3,500.00"></label>
+          <span></span>
+        </div>
+        <div class="auto"><span class="k">Market Sales (net, auto)</span><span class="v" id="marketNet">&mdash;</span></div>
+        <div class="breakdown" id="breakdown"></div>
         <div class="sec">Comments</div>
         <label class="f">
-          <span class="lab">One per line — each becomes a bullet</span>
+          <span class="lab">One per line &mdash; each becomes a bullet</span>
           <textarea id="comments" placeholder="Good Scratcher and Cigarette Tracking. Keep it up.
 Tallied correctly.
 Receipts attached.
@@ -157,31 +155,28 @@ Total sold matches EOD."></textarea>
         </label>
       </div>
     </div>
-
     <div class="card out" id="outCard">
       <div class="card-head"><h2>Generated Message</h2></div>
       <div class="card-body">
         <div class="preview" id="preview"></div>
         <div class="card-btns">
           <button class="btn-primary" id="copyBtn">Copy Message</button>
-          <button class="btn-next" id="nextBtn">Copy &amp; Next →</button>
+          <button class="btn-next" id="nextBtn">Copy &amp; Next &rarr;</button>
         </div>
         <div class="util">
           <button class="btn-ghost" id="clearBtn">Clear Station</button>
           <button class="btn-ghost" id="resetBtn">New Day</button>
         </div>
-        <p class="hint">Market Sales = Total Inside Sales − Scratcher − Lotto − CRV − (station pass-throughs). Each station keeps its own numbers as you switch. Empty $ amounts show <b>$$$</b>; blank Car Wash prints "No one provided."</p>
+        <p class="hint">Market Sales = Department Sales &minus; Amerigas &minus; CRV &minus; Lotto &minus; Scratcher &minus; Smog &minus; Car Wash (whichever apply to the station). Empty $ amounts show <b>$$$</b>; blank Car Wash prints "No one provided."</p>
       </div>
     </div>
   </div>
 </div>
-
 <div class="actionbar">
-  <div class="ab-info"><span class="s" id="abStation">NTO</span><span class="t" id="abTotal">—</span></div>
+  <div class="ab-info"><span class="s" id="abStation">NTO</span><span class="t" id="abTotal">&mdash;</span></div>
   <button class="btn-primary" id="copyBtnM">Copy</button>
-  <button class="btn-next" id="nextBtnM">Copy &amp; Next →</button>
+  <button class="btn-next" id="nextBtnM">Copy &amp; Next &rarr;</button>
 </div>
-
 <script>
 const $ = id => document.getElementById(id);
 const STATIONS = ['BNF','BUR','FLO','SBM','NTO','ROX','S76'];
@@ -195,106 +190,85 @@ const FUELS = {
   ROX:['Regular','Plus','V-Power'],
   S76:['Regular','Plus','Premium','E85'],
 };
-// per-station optional fields
 const CONFIG = {
-  BNF:{},
-  BUR:{kadi:true},
-  FLO:{amerigasSales:true},
-  SBM:{},
-  NTO:{smogSales:true,carwashSales:true,smogCount:true,carwashCount:true},
-  ROX:{},
-  S76:{},
+  BNF:{}, BUR:{kadi:true}, FLO:{amerigas:true}, SBM:{carwash:true},
+  NTO:{carwash:true,smog:true}, ROX:{}, S76:{},
 };
-const FIXED = ['totalInside','lotto','crv','kadi','amerigasSales','smogSales','carwashSales',
-  'scratchCount','scratchAmt','cigCount','cigAmt','carwashCount','smogCount','shortOver','comments'];
-
+const FIXED = ['shortOver','amerigasSales','carwashCount','carwashSales',
+  'cigCount','cigAmt','crv','lottoCount','lotto','scratchCount','scratchAmt',
+  'smogCount','smogSales','deptSales','safeDrops','titanReport','kadi','comments'];
 const state = {};
 STATIONS.forEach(s=>{ state[s]={fuels:{},fixed:{}}; FUELS[s].forEach(g=>state[s].fuels[g]=''); FIXED.forEach(f=>state[s].fixed[f]=''); });
 let current='NTO', sharedDate=todayISO();
-
-function todayISO(){const d=new Date(),z=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`;}
+function todayISO(){const d=new Date(),z=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate());}
 function num(v){const n=parseFloat(String(v).replace(/[^0-9.\-]/g,''));return isNaN(n)?NaN:n;}
 function n0(v){const n=num(v);return isNaN(n)?0:n;}
 function comma(n){return n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
-function fmtDate(iso){if(!iso)return '__/__/____';const[y,m,d]=iso.split('-');return `${m}/${d}/${y}`;}
-
+function fmtDate(iso){if(!iso)return '__/__/____';const p=iso.split('-');return p[1]+'/'+p[2]+'/'+p[0];}
 function renderChips(){const c=$('chips');c.innerHTML='';STATIONS.forEach(s=>{const b=document.createElement('button');b.className='chip'+(s===current?' active':'')+(isDone(s)?' done':'');b.textContent=s;b.onclick=()=>switchTo(s);c.appendChild(b);});}
 function isDone(s){const st=state[s];return Object.values(st.fuels).some(x=>String(x).trim()!=='')||Object.values(st.fixed).some(x=>String(x).trim()!=='');}
-
-function buildFuelRows(){const grades=FUELS[current];const wrap=$('fuelRows');wrap.innerHTML='';for(let i=0;i<grades.length;i+=2){const row=document.createElement('div');row.className='row';[grades[i],grades[i+1]].forEach(g=>{if(!g){row.appendChild(document.createElement('span'));return;}const lab=document.createElement('label');lab.className='f';lab.innerHTML=`<span class="lab">${g}</span><input data-grade="${g}" type="text" inputmode="decimal" placeholder="0.00">`;lab.querySelector('input').addEventListener('input',render);row.appendChild(lab);});wrap.appendChild(row);}}
-function applyConfig(){const cfg=CONFIG[current];['kadi','amerigasSales','smogSales','carwashSales','smogCount','carwashCount'].forEach(k=>{const el=$('wrap_'+k);if(el)el.classList.toggle('hidden',!cfg[k]);});const anyCount=cfg.smogCount||cfg.carwashCount;$('sec_extras').classList.toggle('hidden',!anyCount);}
-function loadStation(){$('stationName').textContent=FULLNAME[current]||current;$('abStation').textContent=current;buildFuelRows();const st=state[current];document.querySelectorAll('#fuelRows input').forEach(inp=>inp.value=st.fuels[inp.dataset.grade]??'');FIXED.forEach(f=>$(f).value=st.fixed[f]??'');$('date').value=sharedDate;applyConfig();render();}
+function buildFuelRows(){const grades=FUELS[current];const wrap=$('fuelRows');wrap.innerHTML='';for(let i=0;i<grades.length;i+=2){const row=document.createElement('div');row.className='row';[grades[i],grades[i+1]].forEach(g=>{if(!g){row.appendChild(document.createElement('span'));return;}const lab=document.createElement('label');lab.className='f';lab.innerHTML='<span class="lab">'+g+'</span><input data-grade="'+g+'" type="text" inputmode="decimal" placeholder="0.00">';lab.querySelector('input').addEventListener('input',render);row.appendChild(lab);});wrap.appendChild(row);}}
+function applyConfig(){const cfg=CONFIG[current];$('row_amerigas').classList.toggle('hidden',!cfg.amerigas);$('row_carwash').classList.toggle('hidden',!cfg.carwash);$('row_smog').classList.toggle('hidden',!cfg.smog);$('row_kadi').classList.toggle('hidden',!cfg.kadi);}
+function loadStation(){$('stationName').textContent=FULLNAME[current]||current;$('abStation').textContent=current;buildFuelRows();const st=state[current];document.querySelectorAll('#fuelRows input').forEach(inp=>inp.value=st.fuels[inp.dataset.grade]||'');FIXED.forEach(f=>$(f).value=st.fixed[f]||'');$('date').value=sharedDate;applyConfig();render();}
 function saveCurrent(){const st=state[current];document.querySelectorAll('#fuelRows input').forEach(inp=>st.fuels[inp.dataset.grade]=inp.value);FIXED.forEach(f=>st.fixed[f]=$(f).value);sharedDate=$('date').value;}
 function switchTo(s){saveCurrent();current=s;loadStation();renderChips();window.scrollTo({top:0,behavior:'smooth'});}
-function computeTotalVol(){let t=0,any=false;document.querySelectorAll('#fuelRows input').forEach(inp=>{const n=num(inp.value);if(!isNaN(n)){t+=n;any=true;}});const out=any?comma(t):'0.00';$('totalVol').textContent=out;$('abTotal').textContent=any?('Vol '+out):'—';return any;}
+function computeTotalVol(){let t=0,any=false;document.querySelectorAll('#fuelRows input').forEach(inp=>{const n=num(inp.value);if(!isNaN(n)){t+=n;any=true;}});const out=any?comma(t):'0.00';$('totalVol').textContent=out;$('abTotal').textContent=any?('Vol '+out):'\u2014';return any;}
 function v(id){return $(id).value.trim();}
-
-// net market sales calc + breakdown
 function marketCalc(){
-  const cfg=CONFIG[current];
-  const gross=v('totalInside');
-  const parts=[
-    ['Scratcher', n0(v('scratchAmt'))],
-    ['Lotto',     n0(v('lotto'))],
-    ['CRV',       n0(v('crv'))],
-  ];
-  if(cfg.amerigasSales) parts.push(['Amerigas', n0(v('amerigasSales'))]);
-  if(cfg.smogSales)     parts.push(['Smog',     n0(v('smogSales'))]);
-  if(cfg.carwashSales)  parts.push(['Carwash',  n0(v('carwashSales'))]);
-  const ded=parts.reduce((a,[,n])=>a+n,0);
-  const hasGross = gross!=='' && !isNaN(num(gross));
-  const net = hasGross ? (num(gross)-ded) : null;
-  return {hasGross, gross:hasGross?num(gross):0, ded, parts, net};
+  const cfg=CONFIG[current];const gross=v('deptSales');
+  const parts=[['Scratcher',n0(v('scratchAmt'))],['Lotto',n0(v('lotto'))],['CRV',n0(v('crv'))]];
+  if(cfg.amerigas) parts.push(['Amerigas',n0(v('amerigasSales'))]);
+  if(cfg.smog)     parts.push(['Smog',n0(v('smogSales'))]);
+  if(cfg.carwash)  parts.push(['Carwash',n0(v('carwashSales'))]);
+  const ded=parts.reduce((a,p)=>a+p[1],0);
+  const hasGross=gross!=='' && !isNaN(num(gross));
+  return {hasGross,gross:hasGross?num(gross):0,ded,parts,net:hasGross?num(gross)-ded:null};
 }
 function renderMarket(){
-  const m=marketCalc();
-  $('marketNet').textContent = m.hasGross ? comma(m.net) : '—';
-  if(m.hasGross){
-    const lines = [`Inside Sales   ${comma(m.gross)}`]
-      .concat(m.parts.map(([k,n])=>`− ${k.padEnd(9)} ${comma(n)}`))
-      .concat([`= Market Sales ${comma(m.net)}`]);
-    $('breakdown').textContent = lines.join('\n');
-    $('breakdown').classList.remove('hidden');
-  } else {
-    $('breakdown').textContent=''; $('breakdown').classList.add('hidden');
-  }
+  const m=marketCalc();$('marketNet').textContent=m.hasGross?comma(m.net):'\u2014';
+  if(m.hasGross){const lines=['Dept Sales     '+comma(m.gross)].concat(m.parts.map(p=>'\u2212 '+p[0].padEnd(9)+' '+comma(p[1]))).concat(['= Market Sales '+comma(m.net)]);$('breakdown').textContent=lines.join('\n');$('breakdown').classList.remove('hidden');}
+  else{$('breakdown').textContent='';$('breakdown').classList.add('hidden');}
   return m;
 }
-
 function build(){
   computeTotalVol();const m=renderMarket();const cfg=CONFIG[current];const L=[];
   L.push(current);L.push(fmtDate(v('date')));
-  document.querySelectorAll('#fuelRows input').forEach(inp=>L.push(`${inp.dataset.grade}: ${inp.value.trim()||'—'}`));
-  L.push(`Total Volume: ${$('totalVol').textContent}`);
-  L.push(`Market Sales: ${m.hasGross?comma(m.net):'—'}`);
-  if(cfg.kadi) L.push(`KADI Account: ${v('kadi')?'$'+v('kadi'):'$$$'}`);
-  if(cfg.carwashCount) L.push(`Car Wash: ${v('carwashCount')||'No one provided.'}`);
-  L.push(`Scratchers: ${v('scratchCount')||'—'}`);
-  L.push(`Amount: ${v('scratchAmt')?'$'+v('scratchAmt'):'$$$'}`);
-  L.push(`Cigarettes: ${v('cigCount')||'—'}`);
-  L.push(`Amount: ${v('cigAmt')?'$'+v('cigAmt'):'$$$'}`);
-  if(cfg.smogCount) L.push(`Smog: ${v('smogCount')||'—'}`);
-  let so=v('shortOver'),soStr='—';if(so){const n=num(so);soStr=!isNaN(n)?(n<0?'-$'+Math.abs(n).toFixed(2):'$'+n.toFixed(2)):so;}
-  L.push(`Short/Over: ${soStr}`);
+  document.querySelectorAll('#fuelRows input').forEach(inp=>L.push(inp.dataset.grade+': '+(inp.value.trim()||'\u2014')));
+  L.push('Total Volume: '+$('totalVol').textContent);
+  L.push('Market Sales: '+(m.hasGross?comma(m.net):'\u2014'));
+  if(cfg.kadi) L.push('KADI Account: '+(v('kadi')?'$'+v('kadi'):'$$$'));
+  if(cfg.carwash){L.push('Car Wash: '+(v('carwashCount')||'No one provided.'));L.push('Car Wash Sales: '+(v('carwashSales')?'$'+v('carwashSales'):'$$$'));}
+  L.push('Cigarettes: '+(v('cigCount')||'\u2014'));
+  L.push('Amount: '+(v('cigAmt')?'$'+v('cigAmt'):'$$$'));
+  L.push('CRV: '+(v('crv')?'$'+v('crv'):'$$$'));
+  L.push('Lotto: '+(v('lottoCount')||'\u2014'));
+  L.push('Lotto Sales: '+(v('lotto')?'$'+v('lotto'):'$$$'));
+  L.push('Scratchers: '+(v('scratchCount')||'\u2014'));
+  L.push('Amount: '+(v('scratchAmt')?'$'+v('scratchAmt'):'$$$'));
+  if(cfg.smog){L.push('Smog: '+(v('smogCount')||'\u2014'));L.push('Smog Sales: '+(v('smogSales')?'$'+v('smogSales'):'$$$'));}
+  if(cfg.amerigas) L.push('Amerigas Sales: '+(v('amerigasSales')?'$'+v('amerigasSales'):'$$$'));
+  L.push('Department Sales: '+(v('deptSales')?'$'+v('deptSales'):'$$$'));
+  L.push('Safe Drops: '+(v('safeDrops')?'$'+v('safeDrops'):'$$$'));
+  L.push('Titan Report: '+(v('titanReport')?'$'+v('titanReport'):'$$$'));
+  var so=v('shortOver'),soStr='\u2014';if(so){var n=num(so);soStr=!isNaN(n)?(n<0?'-$'+Math.abs(n).toFixed(2):'$'+n.toFixed(2)):so;}
+  L.push('Short/Over: '+soStr);
   L.push('Comments:');
   const cm=v('comments').split('\n').map(x=>x.trim()).filter(Boolean);
-  if(cm.length) cm.forEach(x=>L.push(`- ${x}`)); else L.push('- ');
+  if(cm.length) cm.forEach(x=>L.push('- '+x)); else L.push('- ');
   return L.join('\n');
 }
-function render(){const txt=build();const esc=txt.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');$('preview').innerHTML=esc.split('\n').map((l,i)=>i<2?`<span class="hl">${l}</span>`:l).join('\n');renderChips();}
+function render(){const txt=build();const esc=txt.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');$('preview').innerHTML=esc.split('\n').map((l,i)=>i<2?'<span class="hl">'+l+'</span>':l).join('\n');renderChips();}
 async function copyText(){const txt=build();try{await navigator.clipboard.writeText(txt);}catch(e){const t=document.createElement('textarea');t.value=txt;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.focus();t.select();document.execCommand('copy');t.remove();}}
-function flash(btn,msg){const old=btn.innerHTML;btn.innerHTML=msg;btn.classList.add('copied');setTimeout(()=>{btn.innerHTML=old;btn.classList.remove('copied');},1300);}
-function doCopy(btn){return async()=>{await copyText();saveCurrent();flash(btn,'✓ Copied');renderChips();};}
-function doNext(btn){return async()=>{await copyText();saveCurrent();renderChips();flash(btn,'✓ Copied');const idx=STATIONS.indexOf(current);const next=STATIONS[(idx+1)%STATIONS.length];setTimeout(()=>switchTo(next),320);};}
-
+function flash(btn,msg){const old=btn.innerHTML;btn.innerHTML=msg;btn.classList.add('copied');setTimeout(function(){btn.innerHTML=old;btn.classList.remove('copied');},1300);}
+function doCopy(btn){return async function(){await copyText();saveCurrent();flash(btn,'\u2713 Copied');renderChips();};}
+function doNext(btn){return async function(){await copyText();saveCurrent();renderChips();flash(btn,'\u2713 Copied');const idx=STATIONS.indexOf(current);const next=STATIONS[(idx+1)%STATIONS.length];setTimeout(function(){switchTo(next);},320);};}
 FIXED.forEach(f=>$(f).addEventListener('input',render));
-$('date').addEventListener('change',()=>{sharedDate=$('date').value;render();});
+$('date').addEventListener('change',function(){sharedDate=$('date').value;render();});
 $('copyBtn').onclick=doCopy($('copyBtn'));$('nextBtn').onclick=doNext($('nextBtn'));
 $('copyBtnM').onclick=doCopy($('copyBtnM'));$('nextBtnM').onclick=doNext($('nextBtnM'));
-$('peekBtn').onclick=()=>$('outCard').scrollIntoView({behavior:'smooth',block:'start'});
-$('clearBtn').onclick=()=>{const st=state[current];FUELS[current].forEach(g=>st.fuels[g]='');FIXED.forEach(f=>st.fixed[f]='');loadStation();renderChips();};
-$('resetBtn').onclick=()=>{STATIONS.forEach(s=>{FUELS[s].forEach(g=>state[s].fuels[g]='');FIXED.forEach(f=>state[s].fixed[f]='');});sharedDate=todayISO();current='NTO';loadStation();renderChips();window.scrollTo({top:0,behavior:'smooth'});};
-
+$('peekBtn').onclick=function(){$('outCard').scrollIntoView({behavior:'smooth',block:'start'});};
+$('clearBtn').onclick=function(){const st=state[current];FUELS[current].forEach(g=>st.fuels[g]='');FIXED.forEach(f=>st.fixed[f]='');loadStation();renderChips();};
+$('resetBtn').onclick=function(){STATIONS.forEach(s=>{FUELS[s].forEach(g=>state[s].fuels[g]='');FIXED.forEach(f=>state[s].fixed[f]='');});sharedDate=todayISO();current='NTO';loadStation();renderChips();window.scrollTo({top:0,behavior:'smooth'});};
 renderChips();loadStation();
 </script>
 </body>
