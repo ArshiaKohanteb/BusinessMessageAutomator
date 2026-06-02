@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0">
+<meta name="theme-color" content="#1f7aec">
+<title>Daily Station Report</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+  :root{
+    --bg:#f4f7fb;--panel:#ffffff;--ink:#10243e;--muted:#6b7c92;--line:#e2e9f1;
+    --brand:#1f7aec;--amber:#f6a609;--green:#16a34a;--green-soft:#e7f8ee;--field:#f7fafd;
+    --shadow:0 18px 40px -22px rgba(16,36,62,.35);
+    --safe-b:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{background:var(--bg);color:var(--ink);font-family:'Plus Jakarta Sans',sans-serif;}
+  body{background:radial-gradient(900px 460px at 110% -10%,rgba(31,122,236,.10),transparent 60%),radial-gradient(700px 400px at -10% 110%,rgba(246,166,9,.12),transparent 55%),var(--bg);min-height:100vh}
+  .wrap{max-width:1120px;margin:0 auto;padding:18px 14px calc(120px + var(--safe-b))}
+  @media(min-width:901px){.wrap{padding-bottom:48px}}
+
+  header{margin-bottom:10px}
+  .brand h1{font-weight:800;font-size:clamp(22px,5vw,36px);letter-spacing:-.02em;line-height:1.05}
+  .brand h1 span{color:var(--brand)}
+  .brand p{color:var(--muted);font-size:13.5px;margin-top:6px;max-width:54ch}
+  @media(max-width:900px){.brand p{display:none}}
+
+  /* sticky station rail */
+  .rail{position:sticky;top:0;z-index:30;background:rgba(244,247,251,.92);backdrop-filter:blur(8px);
+    margin:10px -14px 4px;padding:10px 14px;border-bottom:1px solid var(--line)}
+  .rail-inner{display:flex;gap:9px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+  .rail-inner::-webkit-scrollbar{display:none}
+  .chip{position:relative;flex:0 0 auto;border:1.5px solid var(--line);background:#fff;color:var(--ink);
+    font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;padding:11px 16px;border-radius:12px;
+    cursor:pointer;transition:all .14s;letter-spacing:.03em;min-height:46px}
+  .chip:active{transform:scale(.96)}
+  .chip.active{background:var(--brand);border-color:var(--brand);color:#fff;box-shadow:0 8px 18px -8px rgba(31,122,236,.7)}
+  .chip.done::after{content:"✓";position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;
+    background:var(--green);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg)}
+  .chip.active.done::after{border-color:var(--brand)}
+
+  .grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:14px}
+  @media(min-width:901px){.grid{grid-template-columns:1.05fr .95fr;align-items:start}}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+  @media(min-width:901px){.card.out{position:sticky;top:80px}}
+  .card-head{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .card-head h2{font-size:12px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);font-weight:700}
+  .pill{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;background:var(--brand);color:#fff;padding:6px 13px;border-radius:999px}
+  .card-body{padding:16px}
+
+  .sec{font-size:11px;text-transform:uppercase;letter-spacing:.13em;color:var(--brand);font-weight:800;margin:18px 0 10px;display:flex;align-items:center;gap:10px}
+  .sec:first-child{margin-top:0}
+  .sec::after{content:"";flex:1;height:1px;background:var(--line)}
+
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  @media(max-width:430px){.row{grid-template-columns:1fr}}
+
+  label.f{display:block;margin-bottom:11px}
+  .lab{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px;font-weight:700}
+  input,textarea{width:100%;background:var(--field);border:1.5px solid var(--line);color:var(--ink);border-radius:12px;
+    padding:13px 13px;font-size:16px;font-family:'JetBrains Mono',monospace;transition:border-color .14s,box-shadow .14s;min-height:50px}
+  input::placeholder,textarea::placeholder{color:#a9b6c6}
+  input:focus,textarea:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(31,122,236,.16);background:#fff}
+  textarea{font-family:'Plus Jakarta Sans',sans-serif;resize:vertical;min-height:92px;line-height:1.5}
+  .auto{display:flex;align-items:center;justify-content:space-between;background:var(--green-soft);border:1.5px solid #bfe9cd;border-radius:12px;padding:13px 15px;font-family:'JetBrains Mono',monospace}
+  .auto .k{color:#3f8a5c;font-size:13px;font-weight:600}
+  .auto .v{font-weight:800;font-size:19px;color:var(--green)}
+  .hidden{display:none!important}
+
+  .preview{background:#0f1f33;color:#dce7f3;border-radius:14px;padding:16px;font-family:'JetBrains Mono',monospace;
+    font-size:14px;line-height:1.7;white-space:pre-wrap;word-break:break-word;min-height:110px}
+  .preview .hl{color:var(--amber);font-weight:700}
+
+  button{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;border:none;border-radius:13px;
+    padding:14px 18px;cursor:pointer;transition:transform .1s,filter .15s;letter-spacing:.01em;min-height:52px}
+  button:active{transform:translateY(1px)}
+  .btn-primary{background:var(--brand);color:#fff}
+  .btn-primary:hover{filter:brightness(1.06)}
+  .btn-next{background:var(--amber);color:#3a2700}
+  .btn-next:hover{filter:brightness(1.05)}
+  .btn-ghost{background:#fff;color:var(--muted);border:1.5px solid var(--line)}
+  .btn-ghost:hover{color:var(--ink);border-color:var(--brand)}
+  .copied{background:var(--green)!important;color:#fff!important}
+
+  .card-btns{display:flex;gap:11px;margin-top:14px}
+  .card-btns .btn-primary,.card-btns .btn-next{flex:1}
+  .util{display:flex;gap:11px;margin-top:10px}
+  .util button{flex:1}
+  .hint{color:var(--muted);font-size:12px;margin-top:12px;line-height:1.5}
+
+  /* hide in-card primary/next buttons on mobile (sticky bar handles them) */
+  @media(max-width:900px){.card-btns{display:none}}
+
+  /* sticky bottom action bar — mobile only */
+  .actionbar{position:fixed;left:0;right:0;bottom:0;z-index:40;
+    background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-top:1px solid var(--line);
+    padding:10px 14px calc(10px + var(--safe-b));display:flex;gap:11px;align-items:center;
+    box-shadow:0 -10px 30px -18px rgba(16,36,62,.5)}
+  .actionbar .ab-info{flex:0 0 auto;display:flex;flex-direction:column;line-height:1.1;margin-right:2px}
+  .actionbar .ab-info .s{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:16px}
+  .actionbar .ab-info .t{font-size:11px;color:var(--green);font-weight:700}
+  .actionbar button{flex:1;font-size:14px;padding:13px 10px}
+  @media(min-width:901px){.actionbar{display:none}}
+
+  /* tiny "view message" jump on mobile */
+  .peek{display:none}
+  @media(max-width:900px){.peek{display:inline-flex;align-items:center;gap:6px;background:transparent;border:none;
+    color:var(--brand);font-weight:700;font-size:13px;padding:0;min-height:auto;cursor:pointer}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <h1>Daily <span>Station Report</span></h1>
+      <p>Pick a station, fill the numbers, tap Copy. Each station shows only its own fuel grades and fields. Use Copy &amp; Next to fly through them all.</p>
+    </div>
+  </header>
+
+  <div class="rail"><div class="rail-inner" id="chips"></div></div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="card-head">
+        <h2 id="stationName">Daily Inputs</h2>
+        <button class="peek" id="peekBtn">View message ↓</button>
+      </div>
+      <div class="card-body">
+
+        <div class="sec">Date</div>
+        <div class="row">
+          <label class="f"><span class="lab">Date</span><input type="date" id="date"></label>
+          <span></span>
+        </div>
+
+        <div class="sec">Fuel Volume (gallons)</div>
+        <div id="fuelRows"></div>
+        <div class="auto"><span class="k">Total Volume (auto)</span><span class="v" id="totalVol">0.00</span></div>
+
+        <div class="sec">Sales &amp; Counts</div>
+        <div class="row">
+          <label class="f"><span class="lab">Market Sales ($)</span><input type="text" inputmode="decimal" id="market" placeholder="1,299.87"></label>
+          <label class="f" id="wrap_kadi"><span class="lab">KADI Account ($)</span><input type="text" inputmode="decimal" id="kadi" placeholder="company gas"></label>
+        </div>
+        <div class="row">
+          <label class="f" id="wrap_amerigas"><span class="lab">Amerigas ($)</span><input type="text" inputmode="decimal" id="amerigas" placeholder="propane"></label>
+          <label class="f" id="wrap_carwash"><span class="lab">Car Wash Count</span><input type="text" inputmode="numeric" id="carwash" placeholder="blank = none"></label>
+        </div>
+        <div class="row">
+          <label class="f"><span class="lab">Scratchers (count)</span><input type="text" inputmode="numeric" id="scratchCount" placeholder="11"></label>
+          <label class="f"><span class="lab">Scratchers Amount ($)</span><input type="text" inputmode="decimal" id="scratchAmt" placeholder="605.00"></label>
+        </div>
+        <div class="row">
+          <label class="f"><span class="lab">Cigarettes (count)</span><input type="text" inputmode="numeric" id="cigCount" placeholder="39"></label>
+          <label class="f"><span class="lab">Cigarettes Amount ($)</span><input type="text" inputmode="decimal" id="cigAmt" placeholder="531.11"></label>
+        </div>
+        <div class="row">
+          <label class="f" id="wrap_smog"><span class="lab">Smog (count)</span><input type="text" inputmode="numeric" id="smog" placeholder="7"></label>
+          <label class="f"><span class="lab">Short / Over ($)</span><input type="text" inputmode="decimal" id="shortOver" placeholder="-2.50"></label>
+        </div>
+
+        <div class="sec">Comments</div>
+        <label class="f">
+          <span class="lab">One per line — each becomes a bullet</span>
+          <textarea id="comments" placeholder="Good Scratcher and Cigarette Tracking. Keep it up.
+Tallied correctly.
+Receipts attached.
+Total sold matches EOD."></textarea>
+        </label>
+      </div>
+    </div>
+
+    <div class="card out" id="outCard">
+      <div class="card-head"><h2>Generated Message</h2></div>
+      <div class="card-body">
+        <div class="preview" id="preview"></div>
+        <div class="card-btns">
+          <button class="btn-primary" id="copyBtn">Copy Message</button>
+          <button class="btn-next" id="nextBtn">Copy &amp; Next →</button>
+        </div>
+        <div class="util">
+          <button class="btn-ghost" id="clearBtn">Clear Station</button>
+          <button class="btn-ghost" id="resetBtn">New Day</button>
+        </div>
+        <p class="hint">Each station shows only its own fuel grades + fields and keeps its own numbers as you switch. Empty dollar amounts show <b>$$$</b>; blank Car Wash prints "No one provided."</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- mobile sticky action bar -->
+<div class="actionbar">
+  <div class="ab-info"><span class="s" id="abStation">NTO</span><span class="t" id="abTotal">—</span></div>
+  <button class="btn-primary" id="copyBtnM">Copy</button>
+  <button class="btn-next" id="nextBtnM">Copy &amp; Next →</button>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const STATIONS = ['BNF','BUR','FLO','SBM','NTO','ROX','S76'];
+const FULLNAME = { BNF:'BNF', BUR:'Burbank', FLO:'Florence', SBM:'Seal Beach Mobil', NTO:'North Tustin Oil', ROX:'ROX', S76:'S76' };
+const FUELS = {
+  BNF:['Regular','Super','Premium','Diesel'],
+  BUR:['Regular','Plus','Premium','Diesel'],
+  FLO:['Regular','Plus','V-Power','Diesel'],
+  SBM:['Regular','Super','Premium','Diesel'],
+  NTO:['Regular','Plus','V-Power','Diesel'],
+  ROX:['Regular','Plus','V-Power'],
+  S76:['Regular','Plus','Premium','E85'],
+};
+const CONFIG = { BNF:{}, BUR:{kadi:true}, FLO:{amerigas:true}, SBM:{carwash:true}, NTO:{smog:true,carwash:true}, ROX:{}, S76:{} };
+const FIXED = ['market','kadi','amerigas','carwash','scratchCount','scratchAmt','cigCount','cigAmt','smog','shortOver','comments'];
+
+const state = {};
+STATIONS.forEach(s=>{ state[s]={fuels:{},fixed:{}}; FUELS[s].forEach(g=>state[s].fuels[g]=''); FIXED.forEach(f=>state[s].fixed[f]=''); });
+let current='NTO', sharedDate=todayISO();
+
+function todayISO(){const d=new Date(),z=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`;}
+function num(v){const n=parseFloat(String(v).replace(/[^0-9.\-]/g,''));return isNaN(n)?NaN:n;}
+function comma(n){return n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtDate(iso){if(!iso)return '__/__/____';const[y,m,d]=iso.split('-');return `${m}/${d}/${y}`;}
+
+function renderChips(){const c=$('chips');c.innerHTML='';STATIONS.forEach(s=>{const b=document.createElement('button');b.className='chip'+(s===current?' active':'')+(isDone(s)?' done':'');b.textContent=s;b.onclick=()=>switchTo(s);c.appendChild(b);});}
+function isDone(s){const st=state[s];return Object.values(st.fuels).some(x=>String(x).trim()!=='')||Object.values(st.fixed).some(x=>String(x).trim()!=='');}
+
+function buildFuelRows(){const grades=FUELS[current];const wrap=$('fuelRows');wrap.innerHTML='';for(let i=0;i<grades.length;i+=2){const row=document.createElement('div');row.className='row';[grades[i],grades[i+1]].forEach(g=>{if(!g){row.appendChild(document.createElement('span'));return;}const lab=document.createElement('label');lab.className='f';lab.innerHTML=`<span class="lab">${g}</span><input data-grade="${g}" type="text" inputmode="decimal" placeholder="0.00">`;lab.querySelector('input').addEventListener('input',render);row.appendChild(lab);});wrap.appendChild(row);}}
+function applyConfig(){const cfg=CONFIG[current];$('wrap_kadi').classList.toggle('hidden',!cfg.kadi);$('wrap_amerigas').classList.toggle('hidden',!cfg.amerigas);$('wrap_smog').classList.toggle('hidden',!cfg.smog);$('wrap_carwash').classList.toggle('hidden',!cfg.carwash);}
+function loadStation(){$('curPill')&&($('curPill').textContent=current);$('stationName').textContent=FULLNAME[current]||current;$('abStation').textContent=current;buildFuelRows();const st=state[current];document.querySelectorAll('#fuelRows input').forEach(inp=>inp.value=st.fuels[inp.dataset.grade]??'');FIXED.forEach(f=>$(f).value=st.fixed[f]??'');$('date').value=sharedDate;applyConfig();render();}
+function saveCurrent(){const st=state[current];document.querySelectorAll('#fuelRows input').forEach(inp=>st.fuels[inp.dataset.grade]=inp.value);FIXED.forEach(f=>st.fixed[f]=$(f).value);sharedDate=$('date').value;}
+function switchTo(s){saveCurrent();current=s;loadStation();renderChips();window.scrollTo({top:0,behavior:'smooth'});}
+function computeTotal(){let t=0,any=false;document.querySelectorAll('#fuelRows input').forEach(inp=>{const n=num(inp.value);if(!isNaN(n)){t+=n;any=true;}});const out=any?comma(t):'0.00';$('totalVol').textContent=out;$('abTotal').textContent=any?('Vol '+out):'—';}
+function v(id){return $(id).value.trim();}
+
+function build(){computeTotal();const cfg=CONFIG[current];const L=[];L.push(current);L.push(fmtDate(v('date')));document.querySelectorAll('#fuelRows input').forEach(inp=>L.push(`${inp.dataset.grade}: ${inp.value.trim()||'—'}`));L.push(`Total Volume: ${$('totalVol').textContent}`);L.push(`Market Sales: ${v('market')||'—'}`);if(cfg.kadi)L.push(`KADI Account: ${v('kadi')?'$'+v('kadi'):'$$$'}`);if(cfg.amerigas)L.push(`Amerigas: ${v('amerigas')?'$'+v('amerigas'):'$$$'}`);if(cfg.carwash)L.push(`Car Wash: ${v('carwash')||'No one provided.'}`);L.push(`Scratchers: ${v('scratchCount')||'—'}`);L.push(`Amount: ${v('scratchAmt')?'$'+v('scratchAmt'):'$$$'}`);L.push(`Cigarettes: ${v('cigCount')||'—'}`);L.push(`Amount: ${v('cigAmt')?'$'+v('cigAmt'):'$$$'}`);if(cfg.smog)L.push(`Smog: ${v('smog')||'—'}`);let so=v('shortOver'),soStr='—';if(so){const n=num(so);soStr=!isNaN(n)?(n<0?'-$'+Math.abs(n).toFixed(2):'$'+n.toFixed(2)):so;}L.push(`Short/Over: ${soStr}`);L.push('Comments:');const cm=v('comments').split('\n').map(x=>x.trim()).filter(Boolean);if(cm.length)cm.forEach(x=>L.push(`- ${x}`));else L.push('- ');return L.join('\n');}
+function render(){const txt=build();const esc=txt.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');$('preview').innerHTML=esc.split('\n').map((l,i)=>i<2?`<span class="hl">${l}</span>`:l).join('\n');renderChips();}
+async function copyText(){const txt=build();try{await navigator.clipboard.writeText(txt);}catch(e){const t=document.createElement('textarea');t.value=txt;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.focus();t.select();document.execCommand('copy');t.remove();}}
+function flash(btn,msg){const old=btn.innerHTML;btn.innerHTML=msg;btn.classList.add('copied');setTimeout(()=>{btn.innerHTML=old;btn.classList.remove('copied');},1300);}
+
+function doCopy(btn){return async()=>{await copyText();saveCurrent();flash(btn,'✓ Copied');renderChips();};}
+function doNext(btn){return async()=>{await copyText();saveCurrent();renderChips();flash(btn,'✓ Copied');const idx=STATIONS.indexOf(current);const next=STATIONS[(idx+1)%STATIONS.length];setTimeout(()=>switchTo(next),320);};}
+
+FIXED.forEach(f=>$(f).addEventListener('input',render));
+$('date').addEventListener('change',()=>{sharedDate=$('date').value;render();});
+$('copyBtn').onclick=doCopy($('copyBtn'));
+$('nextBtn').onclick=doNext($('nextBtn'));
+$('copyBtnM').onclick=doCopy($('copyBtnM'));
+$('nextBtnM').onclick=doNext($('nextBtnM'));
+$('peekBtn').onclick=()=>$('outCard').scrollIntoView({behavior:'smooth',block:'start'});
+$('clearBtn').onclick=()=>{const st=state[current];FUELS[current].forEach(g=>st.fuels[g]='');FIXED.forEach(f=>st.fixed[f]='');loadStation();renderChips();};
+$('resetBtn').onclick=()=>{STATIONS.forEach(s=>{FUELS[s].forEach(g=>state[s].fuels[g]='');FIXED.forEach(f=>state[s].fixed[f]='');});sharedDate=todayISO();current='NTO';loadStation();renderChips();window.scrollTo({top:0,behavior:'smooth'});};
+
+renderChips();loadStation();
+</script>
+</body>
+</html>
